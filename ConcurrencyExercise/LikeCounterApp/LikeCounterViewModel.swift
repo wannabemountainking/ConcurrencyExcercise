@@ -28,6 +28,7 @@ final class LikeCounterViewModel {
         do {
             try await sendLikeToServer(postId: postId)
             self.posts[index].likeCount += 1
+			print("postId: \(postId) → 현재 카운트: \(posts[index].likeCount)")
         } catch {
             print(error.localizedDescription)
         }
@@ -36,14 +37,28 @@ final class LikeCounterViewModel {
     
     func bombardLikes() {
         for _ in 1...10 {
-            Task { await like(postId: 1) }
-            Task { await like(postId: 2) }
-            Task { await like(postId: 3) }
+			Task.detached { [weak self] in
+				guard let self else {return}
+				await self.like(postId: 1)
+			}
+			Task.detached {[weak self] in
+				guard let self else {return}
+				await self.like(postId: 2)
+			}
+			Task.detached {[weak self] in
+				guard let self else {return}
+				await self.like(postId: 3)
+			}
         }
     }
+	
+	func reset() {
+		self.posts = initialPosts
+	}
     
     private func sendLikeToServer(postId: Int) async throws {
-        try await Task.sleep(for: .milliseconds(500))
+		let delay = Int.random(in: 100...1000)
+        try await Task.sleep(for: .milliseconds(delay))
     }
 }
 
