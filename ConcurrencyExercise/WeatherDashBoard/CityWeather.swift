@@ -8,7 +8,27 @@
 import Foundation
 
 
-let cities = ["Seoul", "Tokyo", "NewYork", "London", "Paris"]
+let cities = [
+    "Seoul", "Tokyo", "NewYork", "London", "Paris",
+    "Sydney", "Dubai", "Singapore", "Berlin", "Toronto",
+    "Bangkok", "Mumbai", "Cairo", "Moscow", "Madrid",
+    "Rome", "Amsterdam", "Vienna", "Prague", "Budapest",
+    "Warsaw", "Stockholm", "Oslo", "Copenhagen", "Helsinki",
+    "Athens", "Lisbon", "Brussels", "Zurich", "Geneva",
+    "Barcelona", "Milan", "Naples", "Munich", "Frankfurt",
+    "Hamburg", "Dublin", "Edinburgh", "Manchester", "Lyon",
+    "Marseille", "Bordeaux", "Toulouse", "Strasbourg", "Nice",
+    "Istanbul", "Ankara", "Tehran", "Baghdad", "Riyadh",
+    "Doha", "Kuwait", "Muscat", "Karachi", "Lahore",
+    "Delhi", "Kolkata", "Chennai", "Bangalore", "Hyderabad",
+    "Dhaka", "Colombo", "Kathmandu", "Islamabad", "Kabul",
+    "Tashkent", "Almaty", "Baku", "Tbilisi", "Yerevan",
+    "Beijing", "Shanghai", "Guangzhou", "Chengdu", "Wuhan",
+    "HongKong", "Taipei", "Osaka", "Nagoya", "Sapporo",
+    "Manila", "Jakarta", "KualaLumpur", "Hanoi", "HoChiMinhCity",
+    "Yangon", "Phnom Penh", "Vientiane", "Colombo", "Male",
+    "Melbourne", "Brisbane", "Perth", "Auckland", "Wellington"
+]
 
 struct CityWeather: Identifiable {
 	let id = UUID()
