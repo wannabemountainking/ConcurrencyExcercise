@@ -37,14 +37,19 @@ final class WeatherDashboardViewModel {
 		}
 	}
 	
-	init() {
+	
+	init(cityWeathers: [CityWeather] = [], isLoading: Bool = true, errorMessage: String? = nil, lastUpdated: Date? = nil) {
+		self.cityWeathers = cities.map { CityWeather(city: $0) }
+		self.isLoading = isLoading
+		self.errorMessage = errorMessage
+		self.lastUpdated = lastUpdated
 		Task {
 			await fetchSequentially()
 		}
 	}
 	
-	func fetchWeather(for city: String) async throws -> CityWeather? {
-		guard !cityWeathers.contains(where: { $0.city == city }) else {return nil}
+	func fetchWeather(for city: String) async throws -> CityWeather {
+		
 		guard let url = URL(string: "https://wttr.in/\(city)?format=j1") else {
 			throw WeatherNetworkError.invalidURL(message: "URL 에러")
 		}
@@ -65,8 +70,9 @@ final class WeatherDashboardViewModel {
 	func fetchSequentially() async {
 		let start = Date()
 		for city in cities {
+			guard !self.cityWeathers.contains(where: { $0.city == city }) else { continue }
 			do {
-				guard let cityWeather = try await fetchWeather(for: city) else {return}
+				let cityWeather = try await fetchWeather(for: city)
 				self.cityWeathers.append(cityWeather)
 			} catch let error as WeatherNetworkError {
 				switch error {
@@ -84,17 +90,17 @@ final class WeatherDashboardViewModel {
 	}
 	
 	func fetchConcurrently() async {
+		self.isLoading = true
 		let start = Date()
+		
 		await withTaskGroup(of: CityWeather.self) { [weak self] group in
 			guard let self else { return }
 			// 1. 모든 작업 동시에 시작
 			for city in cities {
+				guard !self.cityWeathers.contains(where: { $0.city == city }) else {continue}
 				group.addTask {
 					do {
-						guard let result = try await self.fetchWeather(for: city) else {
-							return CityWeather(city: city, errorMessage: "날씨를 가져올 수 없습니다")
-						}
-						return result
+						return try await self.fetchWeather(for: city)
 					} catch {
 						return CityWeather(city: city, errorMessage: "날씨를 가져올 수 없습니다")
 					}
@@ -105,11 +111,13 @@ final class WeatherDashboardViewModel {
 			for await cityWeather in group {
 				if let index = self.cityWeathers.firstIndex(where: { $0.city == cityWeather.city }) {
 					cityWeathers[index] = cityWeather
+					
 				}
 			}
 		}
 		let elapsed = Date().timeIntervalSince(start)
 		print("소요 시간: \(String(format: "%.2f", elapsed))초")
+		self.lastUpdated = Date()
 		self.isLoading = false
 	}
 }
