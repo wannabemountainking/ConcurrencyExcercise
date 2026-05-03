@@ -20,7 +20,7 @@ actor BankAccountActor {
 		AutoTransfer(name: "헬스장", amount: 80_000),
 		AutoTransfer(name: "보험료", amount: 120_000)
 	]
-	
+    
 	private var balance: Int  // 잔액
 	private var transactions: [Transaction] // 거래 내역
 	
@@ -43,24 +43,13 @@ actor BankAccountActor {
 	
 	func deposit(amount: Int, description: String) {
 		self.balance += amount
-		var transaction = Transaction(
-			date: Date(),
-			description: description,
-			amount: amount,
-			balanceAfter: self.balance
-		)
-		self.transactions.append(transaction)
+        updateTrasactions(amount: amount, description: description)
 	}
 	
 	func withdraw(amount: Int, description: String) throws {
 		if self.balance >= amount {
 			self.balance -= amount
-			var transaction = Transaction(
-				date: Date(),
-				description: description,
-				amount: amount,
-				balanceAfter: self.balance
-			)
+			updateTrasactions(amount: amount, description: description)
 		} else {
 			throw BankError.insufficientFunds(
 				balance: self.balance,
@@ -69,5 +58,15 @@ actor BankAccountActor {
 			)
 		}
 	}
+    
+    private func updateTrasactions(amount: Int, description: String) {
+        let transaction = Transaction(
+            date: Date(),
+            description: description,
+            amount: amount,
+            balanceAfter: self.balance
+        )
+        self.transactions.append(transaction)
+    }
 	
 }
