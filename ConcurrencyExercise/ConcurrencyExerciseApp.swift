@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct ConcurrencyExerciseApp: App {
+	
+	@State var accountVM: AccountViewModel = .init()
+	@State var autoTransferVM: AutoTransforViewModel = .init()
+	
     var body: some Scene {
         WindowGroup {
-            NewsFeedView()
+            BankMainView()
+				.environment(accountVM)
+				.environment(autoTransferVM)
         }
     }
 }

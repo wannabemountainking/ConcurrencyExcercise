@@ -8,11 +8,16 @@
 import SwiftUI
 
 struct AccountView: View {
+	@Environment(AccountViewModel.self) var accountVM
+	@Environment(AutoTransforViewModel.self) var autoTransferVM
+	
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        
     }
 }
 
 #Preview {
-    AccountView()
+	AccountView()
+		.environment(AccountViewModel())
+		.environment(AutoTransforViewModel())
 }
