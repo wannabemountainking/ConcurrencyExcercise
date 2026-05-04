@@ -52,6 +52,7 @@ struct DepositView: View {
 				.padding(.bottom, 20)
 				
 				Button(action: {
+                    
 					guard let depositMoney = Int(depositAmount) else {
 						self.depositAmount = ""
 						return
@@ -60,8 +61,6 @@ struct DepositView: View {
 						await self.accountVM.processDeposit(amount: depositMoney, description: depositDesc)
 					}
 					showDepositDone = true
-					depositDesc = ""
-					depositAmount = ""
 				}, label: {
 					Text("입금하기")
 						.font(.title)

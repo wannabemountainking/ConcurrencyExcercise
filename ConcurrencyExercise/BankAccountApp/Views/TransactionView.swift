@@ -61,8 +61,6 @@ struct TransactionView: View {
 						await self.accountVM.transfer(amount: withdrawMoney, description: self.withdrawDesc)
 					}
 					showWithdrawDone = true
-					withdrawDesc = ""
-					withdrawAmount = ""
 				}, label: {
 					Text("출금하기")
 						.font(.title)
