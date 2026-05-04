@@ -47,12 +47,14 @@ actor BankAccountActor {
 	func deposit(title: String, amount: Int, description: String) {
 		self.balance += amount
 		updateTrasactions(title: title, amount: amount, description: description)
+		print(description)
 	}
 	
 	func withdraw(title: String, amount: Int, description: String) throws {
 		if self.balance >= amount {
 			self.balance -= amount
 			updateTrasactions(title: title, amount: amount, description: description)
+			print(description)
 		} else {
 			throw BankError.insufficientFunds(
 				balance: self.balance,

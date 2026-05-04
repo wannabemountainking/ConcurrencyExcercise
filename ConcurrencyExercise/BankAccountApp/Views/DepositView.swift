@@ -60,6 +60,8 @@ struct DepositView: View {
 						await self.accountVM.processDeposit(amount: depositMoney, description: depositDesc)
 					}
 					showDepositDone = true
+					depositDesc = ""
+					depositAmount = ""
 				}, label: {
 					Text("입금하기")
 						.font(.title)
@@ -83,11 +85,8 @@ struct DepositView: View {
 				
 			} footer: {
 				HStack {
-					if showDepositDone {
-						Text("✅ 입금이 완료되었습니다.")
-					} else {
-						Text("⛔️ 입금을 진행하세요")
-					}
+					Text(accountVM.resultMessage)
+						.font(.title3)
 					Spacer()
 				}
 				.padding(20)

@@ -26,7 +26,7 @@ struct TransactionView: View {
 					}
 					.padding(.horizontal, 20)
 					
-					TextField("예: 월급, 세금환급 등", text: $depositDesc)
+					TextField("예: 식료품 등", text: $withdrawDesc)
 						.font(.title2)
 						.padding(8)
 						.background(Color.gray.opacity(0.2))
@@ -43,7 +43,7 @@ struct TransactionView: View {
 					}
 					.padding(.horizontal, 20)
 					
-					TextField("숫자만 입력해 주세요", text: $depositAmount)
+					TextField("숫자만 입력해 주세요", text: $withdrawAmount)
 						.font(.title2)
 						.padding(8)
 						.background(Color.gray.opacity(0.2))
@@ -53,16 +53,18 @@ struct TransactionView: View {
 				.padding(.bottom, 20)
 				
 				Button(action: {
-					guard let depositMoney = Int(depositAmount) else {
-						self.depositAmount = ""
+					guard let withdrawMoney = Int(self.withdrawAmount) else {
+						self.withdrawAmount = ""
 						return
 					}
 					Task {
-						await self.accountVM.processDeposit(amount: depositMoney, description: depositDesc)
+						await self.accountVM.transfer(amount: withdrawMoney, description: self.withdrawDesc)
 					}
-					showDepositDone = true
+					showWithdrawDone = true
+					withdrawDesc = ""
+					withdrawAmount = ""
 				}, label: {
-					Text("입금하기")
+					Text("출금하기")
 						.font(.title)
 						.fontWeight(.semibold)
 						.kerning(2.0)
@@ -73,7 +75,7 @@ struct TransactionView: View {
 				.padding()
 			} header: {
 				HStack {
-					Text("입금")
+					Text("출금")
 						.font(.largeTitle)
 						.fontWeight(.semibold)
 						.foregroundStyle(.mint)
@@ -84,11 +86,8 @@ struct TransactionView: View {
 				
 			} footer: {
 				HStack {
-					if showDepositDone {
-						Text("✅ 입금이 완료되었습니다.")
-					} else {
-						Text("⛔️ 입금을 진행하세요")
-					}
+					Text(accountVM.resultMessage)
+						.font(.title3)
 					Spacer()
 				}
 				.padding(20)
@@ -101,4 +100,5 @@ struct TransactionView: View {
 
 #Preview {
     TransactionView()
+		.environment(AccountViewModel())
 }
