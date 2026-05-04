@@ -10,7 +10,6 @@ import SwiftUI
 struct TransactionView: View {
 	
 	@Environment(AccountViewModel.self) var accountVM
-	@State private var showWithdrawDone: Bool = false
 	@State private var withdrawDesc: String = ""
 	@State private var withdrawAmount: String = ""
 	
@@ -20,7 +19,7 @@ struct TransactionView: View {
 				// content
 				VStack {
 					HStack {
-						Text("입금 내용")
+						Text("출금 내용")
 							.font(.title)
 						Spacer()
 					}
@@ -58,9 +57,10 @@ struct TransactionView: View {
 						return
 					}
 					Task {
-						await self.accountVM.transfer(amount: withdrawMoney, description: self.withdrawDesc)
+                        await self.accountVM.transfer(title: .withdraw, amount: withdrawMoney, description: self.withdrawDesc)
+                        self.withdrawDesc = ""
+                        self.withdrawAmount = ""
 					}
-					showWithdrawDone = true
 				}, label: {
 					Text("출금하기")
 						.font(.title)
@@ -93,6 +93,9 @@ struct TransactionView: View {
 
 		}
 		.padding(20)
+        .task {
+            accountVM.resultMessage = ""
+        }
     }
 }
 

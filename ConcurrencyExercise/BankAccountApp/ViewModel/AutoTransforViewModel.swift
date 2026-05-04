@@ -18,7 +18,13 @@ final class AutoTransforViewModel {
 	
 	private var balance: Int = 1_000_000 // 잔액
 	private var transactions: [Transaction] = [] // 거래 내역
-	var resultMessage: String = ""
+    
+    var autoTransfers: [AutoTransfer] = [
+        AutoTransfer(title: "출금", name: "월세", amount: 500_000),
+        AutoTransfer(title: "출금", name: "넷플릭스", amount: 17_000),
+        AutoTransfer(title: "출금", name: "헬스장", amount: 80_000),
+        AutoTransfer(title: "출금", name: "보험료", amount: 120_000)
+    ]
 	
 	init() {
 		Task {
@@ -26,7 +32,7 @@ final class AutoTransforViewModel {
 		}
 	}
 	
-	func fetchAccount() async {
+    func fetchAccount(title: TransactionType? = nil, amount: Int? = nil, description: String? = nil) async {
 		self.transactions = await bankAccount.getTransactions()
 		do {
 			self.balance = try await bankAccount.getBalance()
@@ -36,24 +42,25 @@ final class AutoTransforViewModel {
 	}
 	
 	func excuteOne(_ transfer: AutoTransfer) async {
+        guard let index = self.autoTransfers.firstIndex(where: { $0.id == transfer.id }) else { return }
 		do {
-			try await self.bankAccount.withdraw(title: "출금", amount: transfer.amount, description: transfer.name)
-			self.resultMessage = "자동이체 완료 ✅ \(transfer.amount.decimalNumber)원 출금 (잔액: \(self.balance.decimalNumber)원)"
+            try await self.bankAccount.withdraw(title: .autoTransfer, amount: transfer.amount, description: transfer.name)
+            await fetchAccount(title: .autoTransfer, amount: transfer.amount, description: transfer.name)
+            self.autoTransfers[index].resultMessage = "\(TransactionType.autoTransfer.title) 완료 ✅\n\(transfer.amount.decimalNumber)원 \(TransactionType.autoTransfer.title)\n잔액: \(self.balance.decimalNumber)원"
 		} catch let error as BankError {
 			if case let .insufficientFunds(balance, requested, description) = error {
-				self.resultMessage = "요청액: \(requested.decimalNumber)원, 계좌 잔액: \(balance.decimalNumber)원 \(description)"
+                self.autoTransfers[index].resultMessage = "요청액: \(requested.decimalNumber)원, 계좌 잔액: \(balance.decimalNumber)원 \(description)"
 			}
 		} catch {
-			self.resultMessage = error.localizedDescription
+            self.autoTransfers[index].resultMessage = error.localizedDescription
 		}
-		await fetchAccount()
 	}
 	
 	func excuteAll() async {
 		await withTaskGroup(of: Void.self) { [weak self] group in
 			guard let self else {return}
 			group.addTask {
-				for transfer in self.bankAccount.autoTransfers {
+                for transfer in await self.autoTransfers {
 					await self.excuteOne(transfer)
 				}
 			}

@@ -14,13 +14,6 @@ actor BankAccountActor {
 	
 	static let shared = BankAccountActor()
 	static let accountNumber: String = "123-456-7890"
-	
-	let autoTransfers: [AutoTransfer] = [
-		AutoTransfer(title: "출금", name: "월세", amount: 500_000),
-		AutoTransfer(title: "출금", name: "넷플릭스", amount: 17_000),
-		AutoTransfer(title: "출금", name: "헬스장", amount: 80_000),
-		AutoTransfer(title: "출금", name: "보험료", amount: 120_000)
-	]
     
 	private var balance: Int  // 잔액
 	private var transactions: [Transaction] // 거래 내역
@@ -44,16 +37,18 @@ actor BankAccountActor {
 		 self.transactions
 	}
 	
-	func deposit(title: String, amount: Int, description: String) {
+	func deposit(title: TransactionType, amount: Int, description: String) async {
 		self.balance += amount
         
-		updateTrasactions(title: title, amount: amount, description: description)
+        await updateTrasactions(title: title, amount: amount, description: description)
 	}
 	
-	func withdraw(title: String, amount: Int, description: String) throws {
+	func withdraw(title: TransactionType, amount: Int, description: String) async throws {
 		if self.balance >= amount {
+            print(self.balance)
 			self.balance -= amount
-			updateTrasactions(title: title, amount: amount, description: description)
+            print(self.balance)
+			await updateTrasactions(title: title, amount: amount, description: description)
 		} else {
 			throw BankError.insufficientFunds(
 				balance: self.balance,
@@ -63,10 +58,10 @@ actor BankAccountActor {
 		}
 	}
     
-	private func updateTrasactions(title: String, amount: Int, description: String) {
-        let transaction = Transaction(
+	private func updateTrasactions(title: TransactionType, amount: Int, description: String) async {
+        let transaction = await Transaction(
             date: Date(),
-			title: title,
+            title: title.title,
             description: description,
             amount: amount,
             balanceAfter: self.balance

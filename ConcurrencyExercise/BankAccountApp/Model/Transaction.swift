@@ -22,9 +22,24 @@ struct AutoTransfer: Identifiable {
 	let title: String
     let name: String
     let amount: Int
+    var resultMessage: String = ""
 }
 
 enum BankError: Error {
 	case insufficientFunds(balance: Int, requested: Int, description: String)
 	case invalidAmount(description: String)
+}
+
+enum TransactionType {
+    case deposit
+    case withdraw
+    case autoTransfer
+    
+    var title: String {
+        switch self {
+        case .deposit: return "입금"
+        case .withdraw: return "출금"
+        case .autoTransfer: return "자동이체"
+        }
+    }
 }

@@ -9,7 +9,6 @@ import SwiftUI
 
 struct DepositView: View {
 	@Environment(AccountViewModel.self) var accountVM
-	@State private var showDepositDone: Bool = false
 	@State private var depositDesc: String = ""
 	@State private var depositAmount: String = ""
 	
@@ -58,9 +57,10 @@ struct DepositView: View {
 						return
 					}
 					Task {
-						await self.accountVM.processDeposit(amount: depositMoney, description: depositDesc)
+                        await self.accountVM.processDeposit(title: .deposit, amount: depositMoney, description: self.depositDesc)
+                        self.depositDesc = ""
+                        self.depositAmount = ""
 					}
-					showDepositDone = true
 				}, label: {
 					Text("입금하기")
 						.font(.title)
@@ -93,6 +93,9 @@ struct DepositView: View {
 
 		}
 		.padding(20)
+        .task {
+            accountVM.resultMessage = ""
+        }
     }
 }
 

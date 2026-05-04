@@ -11,10 +11,12 @@ import Observation
 /// AccountViewModel의 역할: 개좌 불러오기, 송금하기 등 은행 창구 역할
 extension Int {
 	var decimalNumber: String {
-		self.formatted(.number.decimalSeparator(strategy: .always))
+		let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        guard let result = formatter.string(from: NSNumber(integerLiteral: self)) else {return "오류"}
+        return result
 	}
 }
-
 
 @MainActor
 @Observable
@@ -27,14 +29,16 @@ final class AccountViewModel {
 	
 	init() {
 		Task {
-			await fetchAccount()
+            await fetchAccount()
 		}
 	}
 	
-	func fetchAccount() async {
+    func fetchAccount(title: TransactionType? = nil, amount: Int? = nil, description: String? = nil) async {
 		self.accountTransactions = await bankAccount.getTransactions()
 		do {
 			self.accountBalance = try await bankAccount.getBalance()
+            guard let title, let amount else { return }
+            self.resultMessage = "\(title.title) 완료 ✅ \(amount.decimalNumber)원 \(title.title)\n잔액: \(self.accountBalance.decimalNumber)원"
 		} catch let err as BankError {
 			if case .invalidAmount(let description) = err {
 				self.resultMessage = description
@@ -44,16 +48,15 @@ final class AccountViewModel {
 		}
 	}
 	
-	func processDeposit(amount: Int, description: String) async {
-		await self.bankAccount.deposit(title: "입금", amount: amount, description: description)
-		await fetchAccount()
-		self.resultMessage = "입금 완료 ✅ \(amount.decimalNumber)원 입금\n잔액: \(self.accountBalance.decimalNumber)원"
+    func processDeposit(title: TransactionType, amount: Int, description: String) async {
+        await self.bankAccount.deposit(title: title, amount: amount, description: description)
+        await fetchAccount(title: title, amount: amount, description: description)
 	}
 	
-	func transfer(amount: Int, description: String) async {
+    func transfer(title: TransactionType, amount: Int, description: String) async {
 		do {
-			try await self.bankAccount.withdraw(title: "출금", amount: amount, description: description)
-			self.resultMessage = "출금 완료 ✅ \(amount.decimalNumber)원 출금\n잔액: \(self.accountBalance.decimalNumber)원"
+			try await self.bankAccount.withdraw(title: title, amount: amount, description: description)
+            await fetchAccount(title: title, amount: amount, description: description)
 		} catch let err as BankError {
 			if case let .insufficientFunds(balance, requested, description) = err {
 				self.resultMessage = "\(description)\n요청액: \(requested.decimalNumber)원\n계좌 잔액: \(balance.decimalNumber)원"
@@ -61,6 +64,5 @@ final class AccountViewModel {
 		} catch {
 			self.resultMessage = error.localizedDescription
 		}
-		await fetchAccount()
 	}
 }
