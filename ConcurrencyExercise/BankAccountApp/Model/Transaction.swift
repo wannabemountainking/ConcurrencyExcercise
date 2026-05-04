@@ -11,6 +11,7 @@ import Foundation
 struct Transaction: Identifiable {
 	let id = UUID()
     let date: Date
+	let title: String
     let description: String
     let amount: Int       // 양수: 입금, 음수: 출금
     let balanceAfter: Int // 거래 후 잔액
@@ -18,6 +19,7 @@ struct Transaction: Identifiable {
 
 struct AutoTransfer: Identifiable {
     let id = UUID()
+	let title: String
     let name: String
     let amount: Int
 }

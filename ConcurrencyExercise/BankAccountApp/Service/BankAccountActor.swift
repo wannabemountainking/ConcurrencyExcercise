@@ -13,12 +13,13 @@ import Foundation
 actor BankAccountActor {
 	
 	static let shared = BankAccountActor()
+	static let accountNumber: String = "123-456-7890"
 	
 	let autoTransfers: [AutoTransfer] = [
-		AutoTransfer(name: "월세", amount: 500_000),
-		AutoTransfer(name: "넷플릭스", amount: 17_000),
-		AutoTransfer(name: "헬스장", amount: 80_000),
-		AutoTransfer(name: "보험료", amount: 120_000)
+		AutoTransfer(title: "출금", name: "월세", amount: 500_000),
+		AutoTransfer(title: "출금", name: "넷플릭스", amount: 17_000),
+		AutoTransfer(title: "출금", name: "헬스장", amount: 80_000),
+		AutoTransfer(title: "출금", name: "보험료", amount: 120_000)
 	]
     
 	private var balance: Int  // 잔액
@@ -26,7 +27,9 @@ actor BankAccountActor {
 	
 	private init() {
 		self.balance = 1_000_000
-		self.transactions = []
+		self.transactions = [
+			Transaction(date: Date(), title: "입금", description: "상여금", amount: 1_000_000, balanceAfter: 1_000_000)
+		]
 	}
 	
 	func getBalance() throws -> Int {
@@ -41,15 +44,15 @@ actor BankAccountActor {
 		 self.transactions
 	}
 	
-	func deposit(amount: Int, description: String) {
+	func deposit(title: String, amount: Int, description: String) {
 		self.balance += amount
-        updateTrasactions(amount: amount, description: description)
+		updateTrasactions(title: title, amount: amount, description: description)
 	}
 	
-	func withdraw(amount: Int, description: String) throws {
+	func withdraw(title: String, amount: Int, description: String) throws {
 		if self.balance >= amount {
 			self.balance -= amount
-			updateTrasactions(amount: amount, description: description)
+			updateTrasactions(title: title, amount: amount, description: description)
 		} else {
 			throw BankError.insufficientFunds(
 				balance: self.balance,
@@ -59,9 +62,10 @@ actor BankAccountActor {
 		}
 	}
     
-    private func updateTrasactions(amount: Int, description: String) {
+	private func updateTrasactions(title: String, amount: Int, description: String) {
         let transaction = Transaction(
             date: Date(),
+			title: title,
             description: description,
             amount: amount,
             balanceAfter: self.balance

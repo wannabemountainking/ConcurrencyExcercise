@@ -8,14 +8,17 @@
 import SwiftUI
 
 struct BankMainView: View {
-//    @Environment(AccountViewModel.self) var accountVM
-//    @Environment(AutoTransforViewModel.self) var autoTransferVM
+	@Environment(AccountViewModel.self) var accountVM
+	@Environment(AutoTransforViewModel.self) var autoTransferVM
     
     var body: some View {
         TabView {
             Tab("계좌", systemImage: "banknote") {
                 AccountView()
             }
+			Tab("입금", systemImage: "tray.and.arrow.down.fill") {
+				DepositView()
+			}
             Tab("송금", systemImage: "arrow.right.arrow.left") {
                 TransactionView()
             }
@@ -23,6 +26,10 @@ struct BankMainView: View {
                 AutomaticTransferView()
             }
         }
+		.task {
+			await self.accountVM.fetchAccount()
+			await self.autoTransferVM.fetchAccount()
+		}
     }
 }
 

@@ -1,18 +1,17 @@
 //
-//  TransmissionView.swift
+//  DepositView.swift
 //  ConcurrencyExercise
 //
-//  Created by yoonie on 5/3/26.
+//  Created by YoonieMac on 5/4/26.
 //
 
 import SwiftUI
 
-struct TransactionView: View {
-	
+struct DepositView: View {
 	@Environment(AccountViewModel.self) var accountVM
-	@State private var showWithdrawDone: Bool = false
-	@State private var withdrawDesc: String = ""
-	@State private var withdrawAmount: String = ""
+	@State private var showDepositDone: Bool = false
+	@State private var depositDesc: String = ""
+	@State private var depositAmount: String = ""
 	
     var body: some View {
 		ScrollView {
@@ -100,5 +99,6 @@ struct TransactionView: View {
 }
 
 #Preview {
-    TransactionView()
+    DepositView()
+		.environment(AccountViewModel())
 }
