@@ -16,14 +16,14 @@ final class AutoTransforViewModel {
 	
 	let bankAccount: BankAccountActor = .shared
 	
-	private var balance: Int = 1_000_000 // 잔액
-	private var transactions: [Transaction] = [] // 거래 내역
+	var balance: Int = 1_000_000 // 잔액
+	var transactions: [Transaction] = [] // 거래 내역
     
     var autoTransfers: [AutoTransfer] = [
-        AutoTransfer(title: "출금", name: "월세", amount: 500_000),
-        AutoTransfer(title: "출금", name: "넷플릭스", amount: 17_000),
-        AutoTransfer(title: "출금", name: "헬스장", amount: 80_000),
-        AutoTransfer(title: "출금", name: "보험료", amount: 120_000)
+        AutoTransfer(name: "월세", amount: 500_000),
+        AutoTransfer(name: "넷플릭스", amount: 17_000),
+        AutoTransfer(name: "헬스장", amount: 80_000),
+        AutoTransfer(name: "보험료", amount: 120_000)
     ]
 	
 	init() {
@@ -41,7 +41,7 @@ final class AutoTransforViewModel {
 		}
 	}
 	
-	func excuteOne(_ transfer: AutoTransfer) async {
+	func executeOne(_ transfer: AutoTransfer) async {
         guard let index = self.autoTransfers.firstIndex(where: { $0.id == transfer.id }) else { return }
 		do {
             try await self.bankAccount.withdraw(title: .autoTransfer, amount: transfer.amount, description: transfer.name)
@@ -59,11 +59,12 @@ final class AutoTransforViewModel {
 	func excuteAll() async {
 		await withTaskGroup(of: Void.self) { [weak self] group in
 			guard let self else {return}
-			group.addTask {
-                for transfer in await self.autoTransfers {
-					await self.excuteOne(transfer)
+			for transfer in self.autoTransfers {
+				group.addTask {
+					await self.executeOne(transfer)
 				}
 			}
 		}
+		await self.fetchAccount()
 	}
 }

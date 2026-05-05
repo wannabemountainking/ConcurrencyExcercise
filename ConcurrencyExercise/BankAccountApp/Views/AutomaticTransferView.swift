@@ -12,6 +12,9 @@ struct AutomaticTransferView: View {
     @Environment(AutoTransforViewModel.self) var autoVM
     
     var body: some View {
+		
+		@Bindable var autoVM = autoVM
+		
         ScrollView {
             HStack {
                 Text(TransactionType.autoTransfer.title)
@@ -37,7 +40,7 @@ struct AutomaticTransferView: View {
             Divider()
             
             Section {
-                ForEach(autoVM.autoTransfers, id: \.id) { auto in
+				ForEach($autoVM.autoTransfers, id: \.id) { $auto in
                     VStack(spacing: 10) {
                         HStack {
                             Text(auto.name)
@@ -47,7 +50,7 @@ struct AutomaticTransferView: View {
                             Button("출금") {
                                 // Action
                                 Task {
-                                    await autoVM.excuteOne(auto)
+                                    await autoVM.executeOne(auto)
                                 }
                             }
                             .font(.title2)
@@ -60,7 +63,7 @@ struct AutomaticTransferView: View {
                         } //:HSTACK
                         
                         HStack {
-                            Text(autoVM.resultMessage)
+                            Text(auto.resultMessage)
                             Spacer()
                         } //:HSTACK
                     } //:VSTACK
@@ -70,9 +73,6 @@ struct AutomaticTransferView: View {
             }//:SECTION
         } //:SCROLL
         .padding(20)
-        .task {
-            await autoVM.fetchAccount()
-        }
     }
 }
 

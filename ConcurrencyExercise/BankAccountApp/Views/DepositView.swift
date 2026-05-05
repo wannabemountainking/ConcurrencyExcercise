@@ -93,9 +93,6 @@ struct DepositView: View {
 
 		}
 		.padding(20)
-        .task {
-            accountVM.resultMessage = ""
-        }
     }
 }
 

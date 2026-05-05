@@ -93,9 +93,6 @@ struct TransactionView: View {
 
 		}
 		.padding(20)
-        .task {
-            accountVM.resultMessage = ""
-        }
     }
 }
 

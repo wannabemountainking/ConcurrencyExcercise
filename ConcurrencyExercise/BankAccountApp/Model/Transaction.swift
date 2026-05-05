@@ -19,7 +19,6 @@ struct Transaction: Identifiable {
 
 struct AutoTransfer: Identifiable {
     let id = UUID()
-	let title: String
     let name: String
     let amount: Int
     var resultMessage: String = ""
@@ -35,7 +34,7 @@ enum TransactionType {
     case withdraw
     case autoTransfer
     
-    var title: String {
+    nonisolated var title: String {
         switch self {
         case .deposit: return "입금"
         case .withdraw: return "출금"

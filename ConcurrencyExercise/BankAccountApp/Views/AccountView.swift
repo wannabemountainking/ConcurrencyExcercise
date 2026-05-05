@@ -10,9 +10,9 @@ import SwiftUI
 struct AccountView: View {
 
     @Environment(AccountViewModel.self) var accountVM
-    @Environment(AutoTransforViewModel.self) var autoTransferVM
 	
     var body: some View {
+		
         ScrollView {
 			Section {
 				//contentView
@@ -84,6 +84,4 @@ struct AccountView: View {
 #Preview {
 	AccountView()
         .environment(AccountViewModel())
-        .environment(AutoTransforViewModel())
-
 }

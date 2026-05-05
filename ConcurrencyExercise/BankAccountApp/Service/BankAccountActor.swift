@@ -37,18 +37,18 @@ actor BankAccountActor {
 		 self.transactions
 	}
 	
-	func deposit(title: TransactionType, amount: Int, description: String) async {
+	func deposit(title: TransactionType, amount: Int, description: String) {
 		self.balance += amount
         
-        await updateTrasactions(title: title, amount: amount, description: description)
+        updateTrasactions(title: title, amount: amount, description: description)
 	}
 	
-	func withdraw(title: TransactionType, amount: Int, description: String) async throws {
+	func withdraw(title: TransactionType, amount: Int, description: String) throws {
 		if self.balance >= amount {
             print(self.balance)
 			self.balance -= amount
             print(self.balance)
-			await updateTrasactions(title: title, amount: amount, description: description)
+			updateTrasactions(title: title, amount: amount, description: description)
 		} else {
 			throw BankError.insufficientFunds(
 				balance: self.balance,
@@ -58,8 +58,10 @@ actor BankAccountActor {
 		}
 	}
     
-	private func updateTrasactions(title: TransactionType, amount: Int, description: String) async {
-        let transaction = await Transaction(
+	
+	
+	func updateTrasactions(title: TransactionType, amount: Int, description: String) {
+        let transaction = Transaction(
             date: Date(),
             title: title.title,
             description: description,
