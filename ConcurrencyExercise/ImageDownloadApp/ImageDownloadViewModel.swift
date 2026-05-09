@@ -24,9 +24,7 @@ let imageURLs = [
 ]
 
 enum NetworkError: Error {
-	case invalidURL
-	case invalidResponse
-	case parsingError
+	case imageDownloadFailed
 }
 
 @MainActor
@@ -38,29 +36,44 @@ final class ImageDownloadViewModel {
 	var elapedTime: String = ""
 	
 	init() {
-		
+        Task {
+            await downloadAll()
+        }
 	}
 	
 	func downloadAll() async {
-		await withTaskGroup(of: [String].self) { group in
-			<#code#>
-		}
+        let startTime = Date()
+        self.isLoading = true
+        
+        await withTaskGroup(of: String?.self, returning: Void.self) { [weak self] group in
+            guard let self else {return}
+            for imageURL in imageURLs {
+                group.addTask {
+                    do {
+                        return try await self.fetchPhoto(url: imageURL)
+                    } catch {
+                        print("이미지 다운로드 실패 에러")
+                    }
+                    return nil
+                }
+                
+                for await result in group {
+                    guard let result else { continue }
+                    self.results.append(result)
+                }
+            }
+        }
+        
+        self.isLoading = false
+        self.elapedTime = "\(Date().timeIntervalSince(startTime).formatted(.number.precision(.fractionLength(2))))초"
 	}
 	
-	private func fetchPhoto(urlString: String) async throws -> Image {
-		guard let url = URL(string: urlString) else {
-			throw NetworkError.invalidURL
-		}
-		do {
-			let (imageData, response) = try await URLSession.shared.data(from: url)
-			guard let res = response as? HTTPURLResponse,
-				  res.statusCode >= 200 && res.statusCode < 300 else {
-				throw NetworkError.invalidResponse
-			}
-			guard let data = UIImage(data: imageData) else { throw NetworkError.parsingError }
-			return Image(uiImage: data)
-		} catch {
-			print(error)
-		}
+	private func fetchPhoto(url: String) async throws -> String {
+        try? await Task.sleep(for: .seconds(1))
+        if Bool.random() {
+            return "✅ \(url) 완료"
+        } else {
+            return "❌ \(url) 실패"
+        }
 	}
 }
