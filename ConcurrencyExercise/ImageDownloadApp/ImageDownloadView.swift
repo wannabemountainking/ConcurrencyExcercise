@@ -16,8 +16,18 @@ struct ImageDownloadView: View {
                 ProgressView("로딩 중...")
             } else {
                 List {
-                    ForEach(vm.results, id: \.self) { urlString in
-                        Text(urlString)
+                    ForEach(vm.results, id: \.id) { imageResult in
+						HStack {
+							Text(imageResult.urlString)
+								.font(.subheadline)
+							Spacer()
+							imageResult.image
+								.resizable()
+								.scaledToFit()
+								.frame(height: 60)
+						}
+						
+						
                     }
                 }
                 Text("소요시간: \(vm.elapedTime)")

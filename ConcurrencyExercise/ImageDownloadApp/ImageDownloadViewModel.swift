@@ -24,14 +24,28 @@ let imageURLs = [
 ]
 
 enum NetworkError: Error {
-	case imageDownloadFailed
+	case invalidURL
+	case parsingError
+	case invalidResponse
+	case URLSessionError
+	case unknownError
+}
+
+enum ImageError: Error {
+	case uiImageToImageError
+}
+
+struct ImageResult: Identifiable {
+	let id = UUID()
+	let urlString: String
+	let image: Image
 }
 
 @MainActor
 @Observable
 final class ImageDownloadViewModel {
 	
-	var results: [String] = []
+	var results: [ImageResult] = []
 	var isLoading: Bool = false
 	var elapedTime: String = ""
 	
@@ -44,36 +58,88 @@ final class ImageDownloadViewModel {
 	func downloadAll() async {
         let startTime = Date()
         self.isLoading = true
-        
-        await withTaskGroup(of: String?.self, returning: Void.self) { [weak self] group in
-            guard let self else {return}
+		self.results = []
+		await withTaskGroup(of: ImageResult.self) { group in
             for imageURL in imageURLs {
                 group.addTask {
-                    do {
-                        return try await self.fetchPhoto(url: imageURL)
-                    } catch {
-                        print("이미지 다운로드 실패 에러")
-                    }
-                    return nil
-                }
-                
-                for await result in group {
-                    guard let result else { continue }
-                    self.results.append(result)
+					await self.safelyFetchPhoto(urlString: imageURL)
                 }
             }
+			for await result in group {
+				self.results.append(result)
+			}
         }
         
         self.isLoading = false
         self.elapedTime = "\(Date().timeIntervalSince(startTime).formatted(.number.precision(.fractionLength(2))))초"
 	}
 	
-	private func fetchPhoto(url: String) async throws -> String {
-        try? await Task.sleep(for: .seconds(1))
+	private func safelyFetchPhoto(urlString: String) async -> ImageResult {
+		do {
+			return try await fetchPhoto(urlString: urlString)
+		} catch let err as NetworkError {
+			switch err {
+			case .invalidURL:
+				return ImageResult(
+					urlString: "URL 에러",
+					image: Image(systemName: "photo.trianglebadge.exclamationmark")
+				)
+			case .parsingError:
+				return ImageResult(
+					urlString: "데이터 파싱 에러",
+					image: Image(systemName: "photo.trianglebadge.exclamationmark")
+				)
+			case .invalidResponse:
+				return ImageResult(
+					urlString: "서버 응답 에러",
+					image: Image(systemName: "photo.trianglebadge.exclamationmark")
+				)
+			case .URLSessionError:
+				return ImageResult(
+					urlString: "URLSession 에러",
+					image: Image(systemName: "photo.trianglebadge.exclamationmark")
+				)
+			case .unknownError:
+				let failedImage = Image(systemName: "photo.trianglebadge.exclamationmark")
+				return ImageResult(
+					urlString: "알 수 없는 이유로 다운로드 실패",
+					image: failedImage
+				)
+			}
+			 
+		} catch let error as ImageError {
+			switch error {
+			case .uiImageToImageError:
+				return ImageResult(
+					urlString: "UIImage -> Image로 변환 실패",
+					image: Image(systemName: "square.and.arrow.down.badge.xmark")
+				)
+			}
+			 
+		} catch {
+			return ImageResult(
+				urlString: "이미지 저장 실패",
+				image: Image(systemName: "square.and.arrow.down.badge.xmark")
+			)
+		}
+	}
+	
+	private func fetchPhoto(urlString: String) async throws -> ImageResult {
         if Bool.random() {
-            return "✅ \(url) 완료"
+			guard let url = URL(string: urlString) else { throw NetworkError.invalidURL }
+			let (data, response) = try await URLSession.shared.data(from: url)
+			guard let res = response as? HTTPURLResponse,
+				  res.statusCode >= 200 && res.statusCode < 300 else {
+				throw NetworkError.invalidResponse
+			}
+			guard let uiImage = UIImage(data: data) else { throw ImageError.uiImageToImageError }
+			let result = ImageResult(
+				urlString: "✅ \(urlString) 완료",
+				image: Image(uiImage: uiImage)
+			)
+			return result
         } else {
-            return "❌ \(url) 실패"
+			throw NetworkError.unknownError
         }
 	}
 }
