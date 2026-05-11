@@ -31,6 +31,7 @@ final class TimerViewModel {
 			self.count = result.count
 			self.timestamp = result.timestamp.timeOnly
 		}
+		self.isRunning = false
 	}
 	
 	func stopTimer() {
