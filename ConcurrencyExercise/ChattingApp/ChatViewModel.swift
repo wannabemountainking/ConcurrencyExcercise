@@ -13,7 +13,7 @@ import Observation
 @Observable
 final class ChatViewModel {
 	
-	let manager = ChatSocketManager.shared
+	let service = FakeSocketService.shared
 	
 	var messages: [ChatMessage] = []
 	var isConnected: Bool = false
@@ -22,16 +22,16 @@ final class ChatViewModel {
 	}
 	
 	func connect() async {
-		self.isConnected = false
-		let stream = manager.makeStream()
-		await manager.connect()
+		self.isConnected = true
+        let stream = service.makeStream()
+        service.connect()
 		for await result in stream {
 			self.messages.insert(result, at: 0)
 		}
-		self.isConnected = true
+		self.isConnected = false
 	}
 	
 	func disConnect() {
-		manager.disconnect()
+		service.disconnect()
 	}
 }

@@ -21,11 +21,24 @@ struct ChatView: View {
 				Group {
 					ScrollView(.vertical) {
 						ForEach(vm.messages, id: \.id) { message in
-							HStack {
-								Text(message.sender)
-									.fontWeight(.bold)
-								Text(message.content)
-								Text("수신 시각: \(message.receivedAt.timeOnly)")
+							VStack {
+                                HStack {
+                                    Text(message.sender)
+                                        .font(.caption)
+                                        .fontWeight(.bold)
+                                    Spacer()
+                                }
+                                HStack {
+                                    Text(message.content)
+                                        .font(.headline)
+                                    Spacer()
+                                }
+                                HStack {
+                                    Spacer()
+                                    Text("수신 시각: \(message.receivedAt.timeOnly)")
+                                        .font(.footnote)
+                                }
+								
 							}
 						}
 						.scrollIndicators(.hidden)
@@ -52,7 +65,7 @@ struct ChatView: View {
 								.frame(maxWidth: .infinity)
 						})
 						.buttonStyle(.borderedProminent)
-						.disabled(vm.isConnected)
+						.disabled(!vm.isConnected)
 					}
 				}
 			}
