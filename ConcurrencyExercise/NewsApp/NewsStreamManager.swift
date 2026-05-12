@@ -11,15 +11,16 @@ import Combine
 
 final class NewsStreamManager {
     
+	static let shared = NewsStreamManager()
+	
     let newsService = FakeNewsService.shared
     private var continuation: AsyncStream<String>.Continuation?
     
-    init() { }
+    private init() { }
     
     func makeStream() -> AsyncStream<String> {
         return AsyncStream { streamHandler in
             self.continuation = streamHandler
-            
             streamHandler.onTermination = { [weak self] _ in
                 guard let self else {return}
                 Task { @MainActor in
@@ -30,17 +31,19 @@ final class NewsStreamManager {
     }
     
     func connect() {
-        guard self.continuation == nil else {return}
-        
-        self.newsService.connect { [weak self] newsHeadline in
+		guard self.continuation != nil else {return}
+        self.newsService.connect { [weak self] headline in
             guard let self else {return}
-            self.continuation?.yield(newsHeadline)
+            self.continuation?.yield(headline)
+			print(headline)
         }
     }
     
     func disconnect() {
         guard self.continuation != nil else {return}
         self.newsService.disconnect()
+		
+		self.continuation?.finish()
         self.continuation = nil
     }
 }

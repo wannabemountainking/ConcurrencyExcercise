@@ -11,7 +11,12 @@ import Foundation
 struct NewsHeadline: Identifiable {
     let id = UUID()
     let original: String
-    var translations: [String: String] = [:] // ["영어": "...", "일본어": "...", "중국어": "..."]
+    var translations: [Language]
+	
+	struct Language {
+		let name: String
+		var translated: String
+	}
 }
 
 // 콜백 기반 뉴스 서비스 (변경 불가)
